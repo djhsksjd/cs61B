@@ -107,16 +107,18 @@ public class Model extends Observable {
      *    value, then the leading two tiles in the direction of motion merge,
      *    and the trailing tile does not.
      * */
+
     public boolean tilt(Side side) {
         boolean changed;
         changed = false;
-
         board.setViewingPerspective(side);
+        //board.setViewingPerspective(side);
         // TODO: Modify this.board (and perhaps this.score) to account
         // for the tilt to the Side SIDE. If the board changed, set the
         // changed local variable to true.
 
         int size = board.size();
+//        System.out.println(size);
         //if merge happens, the score should be updated immediately//
         for(int j = 0; j < size; j++){
 
@@ -128,18 +130,20 @@ public class Model extends Observable {
                     newcol.add(tile);
                 }
             }
+            System.out.println("get the column " + j + ": " + newcol);
 
+            //merge the newcol
             for (int i = 0; i < newcol.size()-1; i++){
                 //?-1?
                 Tile current = newcol.get(i);
                 Tile next = newcol.get(i+1);
 
                 if(current.value() == next.value()){
-                    int targetrow = current.row() - 1;
-                    if(targetrow < 0)continue;
+                    int targetrow = current.row();
+                    if(targetrow > size - 1)continue;
 
                     Tile merge = current.merge(j,targetrow,next);
-                    board.move(j,targetrow,merge);
+                    //board.move(j,targetrow,merge);
                     newcol.set(i,merge);
                     newcol.remove(i+1);
                     score += merge.value();
@@ -148,24 +152,43 @@ public class Model extends Observable {
 
                 }
             }
+            System.out.println("合并" + j + ": " + newcol);
+
             //to the up
+
             for(int i = 0; i < newcol.size(); i++){
                 Tile tile = newcol.get(i);
                 int targetrow = size -1 -i;
                 if (tile.row() != targetrow){
-                    board.move(j,targetrow,tile);
+                    newcol.set(i,tile.move(j,targetrow));
+                    //board.move(j,targetrow,tile);
                     changed = true;
                 }
             }
+            System.out.println("to the top " + j + ": " + newcol);
+            //补充为size长度
+            for(int i = size - newcol.size() - 1; i >= 0;i--){
+                if(newcol.size()<size){
+                    Tile t = board.tile(j,i);
+                    t = t.create(0,j,i);
+                    newcol.add(t);
+                }
+            }
+            System.out.println("补充长度" + j + ": " + newcol);
 
-            for(int row = 0; row < size - newcol.size(); row++){
-                if(board.tile(j,row) != null){
-                    board.move(j,row,null);
+            for (int row = 0; row < size; row++) {
+                int t;
+                if(board.tile(j,row)!=null){
+                    t = board.tile(j,row).value();
+                }else t = 0;
+                Tile tile = newcol.get(size -1 -row);
+                if(tile.value()!=t){
+                    board.move(j, row, tile);
                     changed = true;
                 }
+
             }
         }
-
         board.setViewingPerspective(Side.NORTH);
         checkGameOver();
         if (changed) {
@@ -173,6 +196,10 @@ public class Model extends Observable {
         }
         return changed;
     }
+
+
+
+
 
     /** Checks if the game is over and sets the gameOver variable
      *  appropriately.

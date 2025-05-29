@@ -86,7 +86,20 @@ public class Board implements Iterable<Tile> {
      * Returns whether or not this move is a merge.
      * */
     public boolean move(int col, int row, Tile tile) {
-        int pcol = viewPerspective.col(col, row, size()),
+
+        if (tile.value() == 0) {
+            int pcol = viewPerspective.col(col, row, size());
+            int prow = viewPerspective.row(col, row, size());
+            values[pcol][prow] = null;
+            return false; // 清空位置不视为合并
+        }else{
+            int pcol = viewPerspective.col(col, row, size());
+            int prow = viewPerspective.row(col, row, size());
+            values[pcol][prow] = tile;
+            return false;
+        }
+
+        /*int pcol = viewPerspective.col(col, row, size()),
                 prow = viewPerspective.row(col, row, size());
         if (tile.col() == pcol && tile.row() == prow) {
             return false;
@@ -99,8 +112,9 @@ public class Board implements Iterable<Tile> {
             return false;
         } else {
             values[pcol][prow] = tile.merge(pcol, prow, tile1);
-            return true;
-        }
+            //return true;
+            return false;
+        }*/
     }
 
     @Override
